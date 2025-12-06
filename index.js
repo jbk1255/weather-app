@@ -37,6 +37,7 @@ weatherForm.addEventListener("submit", async event => {
         try {
             const weatherData = await getWeatherData(city);
 
+            // Reset unit to default (Celsius) for each new search
             unitSelect.value = "celsius";
 
             displayWeatherInfo(weatherData, unitSelect.value);
@@ -69,6 +70,32 @@ async function getWeatherData(city) {
     return await response.json();
 }
 
+function setCardBackground(weatherId) {
+    let gradient;
+
+    if (weatherId === 800) {
+        // Clear sky → bright blue gradient
+        gradient = "linear-gradient(180deg, hsl(210, 100%, 70%), hsl(40, 100%, 75%))";
+    } else if (weatherId >= 200 && weatherId < 600) {
+        // Thunderstorm, drizzle, rain → darker blue/grey
+        gradient = "linear-gradient(180deg, hsl(210, 50%, 40%), hsl(210, 50%, 20%))";
+    } else if (weatherId >= 600 && weatherId < 700) {
+        // Snow → white/grey
+        gradient = "linear-gradient(180deg, hsl(0, 0%, 100%), hsl(0, 0%, 80%))";
+    } else if (weatherId >= 700 && weatherId < 800) {
+        // Fog / mist / haze → desaturated
+        gradient = "linear-gradient(180deg, hsl(210, 10%, 75%), hsl(40, 10%, 65%))";
+    } else if (weatherId >= 801 && weatherId < 810) {
+        // Clouds → light grey/blue
+        gradient = "linear-gradient(180deg, hsl(210, 20%, 80%), hsl(0, 0%, 70%))";
+    } else {
+        // Fallback (same as your original)
+        gradient = "linear-gradient(180deg, hsl(210, 100%, 75%), hsl(40, 100%, 75%))";
+    }
+
+    card.style.background = gradient;
+}
+
 function displayWeatherInfo(data, unit) {
 
     const {name: city, 
@@ -79,6 +106,9 @@ function displayWeatherInfo(data, unit) {
 
     card.textContent = "";
     card.style.display = "flex";
+
+    // Set background based on weather here 👇
+    setCardBackground(id);
 
     const cityDisplay = document.createElement("h1");
     const tempDisplay = document.createElement("p");
