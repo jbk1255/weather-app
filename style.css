@@ -31,6 +31,18 @@ button[type="submit"]{
 button[type="submit"]:hover{
     background-color: hsl(122, 39%, 40%);
 }
+
+.unitSelect{
+    display: none;           
+    padding: 10px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    border: 2px solid hsla(0, 0%, 20%, 0.3);
+    border-radius: 10px;
+    margin: 10px;
+    cursor: pointer;
+}
+
 .card{
     background: linear-gradient(180deg, hsl(210, 100%, 75%), hsl(40, 100%, 75%));
     padding: 50px;
@@ -73,4 +85,3 @@ p{
     font-weight: bold;
     color: hsla(0, 0%, 0%, 0.75);
 }
-

@@ -3,18 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Weather App</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <form class="weatherForm">
         <input type="text" class="cityInput" placeholder="Enter city">
+
+        <select class="unitSelect">
+            <option value="kelvin">K</option>
+            <option value="celsius" selected>°C</option>
+            <option value="fahrenheit">°F</option>
+        </select>
+
         <button type="submit">Get Weather</button>
     </form>
 
-    <div class="card" style="display: none">
-    </div>
+    <div class="card" style="display: none"></div>
  
     <script src="index.js"></script>
 </body>
