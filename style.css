@@ -71,6 +71,10 @@ p{
     font-weight: bold;
     margin-bottom: 25px;
 }
+.feelsLikeDisplay{
+    font-weight: bold;
+    margin-bottom: 15px;
+}
 .descDisplay{
     font-style: italic;
     font-weight: bold;

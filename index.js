@@ -7,7 +7,7 @@ const unitSelect = document.querySelector(".unitSelect");
 const apiKey = "YOUR_API_KEY";
 
 let currentTempKelvin = null;
-
+let currentFeelsLikeKelvin = null;
 function toCelsius(k) {
     return k - 273.15;
 }
@@ -53,8 +53,14 @@ weatherForm.addEventListener("submit", async event => {
 unitSelect.addEventListener("change", () => {
     if (currentTempKelvin !== null) {
         const tempDisplay = card.querySelector(".tempDisplay");
+        const feelsLikeDisplay = card.querySelector(".feelsLikeDisplay");
+
         if (tempDisplay) {
             tempDisplay.textContent = formatTemp(currentTempKelvin, unitSelect.value);
+        }
+        if (feelsLikeDisplay && currentFeelsLikeKelvin !== null) {
+            feelsLikeDisplay.textContent =
+                `Feels like: ${formatTemp(currentFeelsLikeKelvin, unitSelect.value)}`;
         }
     }
 });
@@ -74,22 +80,16 @@ function setCardBackground(weatherId) {
     let gradient;
 
     if (weatherId === 800) {
-        // Clear sky → bright blue gradient
         gradient = "linear-gradient(180deg, hsl(210, 100%, 70%), hsl(40, 100%, 75%))";
     } else if (weatherId >= 200 && weatherId < 600) {
-        // Thunderstorm, drizzle, rain → darker blue/grey
         gradient = "linear-gradient(180deg, hsl(210, 50%, 40%), hsl(210, 50%, 20%))";
     } else if (weatherId >= 600 && weatherId < 700) {
-        // Snow → white/grey
         gradient = "linear-gradient(180deg, hsl(0, 0%, 100%), hsl(0, 0%, 80%))";
     } else if (weatherId >= 700 && weatherId < 800) {
-        // Fog / mist / haze → desaturated
         gradient = "linear-gradient(180deg, hsl(210, 10%, 75%), hsl(40, 10%, 65%))";
     } else if (weatherId >= 801 && weatherId < 810) {
-        // Clouds → light grey/blue
         gradient = "linear-gradient(180deg, hsl(210, 20%, 80%), hsl(0, 0%, 70%))";
     } else {
-        // Fallback (same as your original)
         gradient = "linear-gradient(180deg, hsl(210, 100%, 75%), hsl(40, 100%, 75%))";
     }
 
@@ -98,38 +98,45 @@ function setCardBackground(weatherId) {
 
 function displayWeatherInfo(data, unit) {
 
-    const {name: city, 
-           main: {temp, humidity}, 
-           weather: [{description, id}]} = data;
+    const {
+        name: city,
+        main: { temp, humidity, feels_like },
+        weather: [{ description, id }]
+    } = data;
 
     currentTempKelvin = temp;
+    currentFeelsLikeKelvin = feels_like;
 
     card.textContent = "";
     card.style.display = "flex";
 
-    // Set background based on weather here 👇
     setCardBackground(id);
 
     const cityDisplay = document.createElement("h1");
     const tempDisplay = document.createElement("p");
+    const feelsLikeDisplay = document.createElement("p");
     const humidityDisplay = document.createElement("p");
     const descDisplay = document.createElement("p");
     const weatherEmoji = document.createElement("p");
 
     cityDisplay.textContent = city;
     tempDisplay.textContent = formatTemp(temp, unit);
+    feelsLikeDisplay.textContent =
+        `Feels like: ${formatTemp(feels_like, unit)}`;
     humidityDisplay.textContent = `Humidity: ${humidity}%`;
     descDisplay.textContent = description;
     weatherEmoji.textContent = getWeatherEmoji(id);
 
     cityDisplay.classList.add("cityDisplay");
     tempDisplay.classList.add("tempDisplay");
+    feelsLikeDisplay.classList.add("feelsLikeDisplay");
     humidityDisplay.classList.add("humidityDisplay");
     descDisplay.classList.add("descDisplay");
     weatherEmoji.classList.add("weatherEmoji");
 
     card.appendChild(cityDisplay);
     card.appendChild(tempDisplay);
+    card.appendChild(feelsLikeDisplay);
     card.appendChild(humidityDisplay);
     card.appendChild(descDisplay);
     card.appendChild(weatherEmoji);
@@ -161,4 +168,5 @@ function displayError(message) {
 
     unitSelect.style.display = "none";
     currentTempKelvin = null;
+    currentFeelsLikeKelvin = null;
 }
