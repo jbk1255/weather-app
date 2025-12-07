@@ -4,7 +4,7 @@ const card = document.querySelector(".card");
 const unitSelect = document.querySelector(".unitSelect");
 const forecastContainer = document.querySelector(".forecastContainer");
 
-const apiKey = "YOUR API KEY";
+const apiKey = "801f9cedc5e0d85ab51861971bd1be08";
 
 let currentTempKelvin = null;
 let currentFeelsLikeKelvin = null;
@@ -15,19 +15,28 @@ function getCountryName(code) {
 }
 
 function toCelsius(k) { return k - 273.15; }
-function toFahrenheit(k) { return (k - 273.15) * 9 / 5 + 32; }
+function toFahrenheit(k) { return (k - 273.15) * 9/5 + 32; }
 
-function formatTemp(kelvin, unit) {
-    if (unit === "celsius") return `${toCelsius(kelvin).toFixed(1)}°C`;
-    if (unit === "fahrenheit") return `${toFahrenheit(kelvin).toFixed(1)}°F`;
-    return `${kelvin.toFixed(1)}K`;
+function formatTemp(k, unit) {
+    if (unit === "celsius") return `${toCelsius(k).toFixed(1)}°C`;
+    if (unit === "fahrenheit") return `${toFahrenheit(k).toFixed(1)}°F`;
+    return `${k.toFixed(1)}K`;
 }
 
-function getCityLocalDate(timezoneOffsetSeconds) {
-    const utcNowMillis = Date.now();
-    const userOffsetSeconds = -new Date().getTimezoneOffset() * 60;
-    const cityMillis = utcNowMillis + (timezoneOffsetSeconds - userOffsetSeconds) * 1000;
-    return new Date(cityMillis);
+function formatTime(date) {
+    return date.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+function getCityLocalDate(offsetSec) {
+    const now = Date.now();
+    const userOffset = -new Date().getTimezoneOffset() * 60;
+    return new Date(now + (offsetSec - userOffset) * 1000);
+}
+
+function getCityDateFromUtc(dt, offsetSec) {
+    const utcMillis = dt * 1000;
+    const userOffset = -new Date().getTimezoneOffset() * 60;
+    return new Date(utcMillis + (offsetSec - userOffset) * 1000);
 }
 
 weatherForm.addEventListener("submit", async event => {
@@ -36,12 +45,15 @@ weatherForm.addEventListener("submit", async event => {
     if (!city) return displayError("Please enter a valid location.");
 
     try {
-        const weatherData = await getWeatherData(city);
-        const forecastData = await getForecastData(city);
+        const [weatherData, forecastData] = await Promise.all([
+            getWeatherData(city),
+            getForecastData(city)
+        ]);
 
         unitSelect.value = "celsius";
-        displayWeatherInfo(weatherData, unitSelect.value);
-        displayForecast(forecastData, unitSelect.value);
+
+        displayWeatherInfo(weatherData, "celsius");
+        displayForecast(forecastData, "celsius");
 
     } catch (error) {
         displayError(error);
@@ -50,16 +62,19 @@ weatherForm.addEventListener("submit", async event => {
 
 unitSelect.addEventListener("change", () => {
     if (currentTempKelvin === null) return;
+
     const tempDisplay = card.querySelector(".tempDisplay");
     const feelsLikeDisplay = card.querySelector(".feelsLikeDisplay");
 
-    if (tempDisplay) tempDisplay.textContent = formatTemp(currentTempKelvin, unitSelect.value);
-    if (feelsLikeDisplay) feelsLikeDisplay.textContent = `Feels like: ${formatTemp(currentFeelsLikeKelvin, unitSelect.value)}`;
+    if (tempDisplay)
+        tempDisplay.textContent = formatTemp(currentTempKelvin, unitSelect.value);
 
-    const forecastTemps = document.querySelectorAll(".forecastTemp");
-    forecastTemps.forEach(el => {
-        const k = Number(el.dataset.kelvin);
-        el.textContent = formatTemp(k, unitSelect.value);
+    if (feelsLikeDisplay)
+        feelsLikeDisplay.textContent = `Feels like: ${formatTemp(currentFeelsLikeKelvin, unitSelect.value)}`;
+
+    const temps = document.querySelectorAll(".forecastTemp");
+    temps.forEach(el => {
+        el.textContent = formatTemp(Number(el.dataset.kelvin), unitSelect.value);
     });
 });
 
@@ -91,12 +106,17 @@ function setCardBackground(id) {
 }
 
 function displayWeatherInfo(data, unit) {
-    const { name: city, sys: { country }, timezone, main: { temp, humidity, feels_like }, weather: [{ description, id }] } = data;
+
+    const { name: city, sys: { country, sunrise, sunset }, timezone,
+            main: { temp, humidity, feels_like },
+            weather: [{ description, id }] } = data;
 
     currentTempKelvin = temp;
     currentFeelsLikeKelvin = feels_like;
 
-    const localDate = getCityLocalDate(timezone);
+    const local = getCityLocalDate(timezone);
+    const sunriseDate = getCityDateFromUtc(sunrise, timezone);
+    const sunsetDate = getCityDateFromUtc(sunset, timezone);
 
     card.textContent = "";
     card.style.display = "flex";
@@ -105,17 +125,13 @@ function displayWeatherInfo(data, unit) {
     const cityDisplay = document.createElement("h1");
     cityDisplay.textContent = `${city}, ${getCountryName(country)}`;
 
-    const localTimeDisplay = document.createElement("p");
-    localTimeDisplay.classList.add("localTimeDisplay");
-    localTimeDisplay.textContent = "Local time: " + localDate.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-
     const tempDisplay = document.createElement("p");
     tempDisplay.classList.add("tempDisplay");
     tempDisplay.textContent = formatTemp(temp, unit);
 
-    const feels = document.createElement("p");
-    feels.classList.add("feelsLikeDisplay");
-    feels.textContent = `Feels like: ${formatTemp(feels_like, unit)}`;
+    const feelsLikeDisplay = document.createElement("p");
+    feelsLikeDisplay.classList.add("feelsLikeDisplay");
+    feelsLikeDisplay.textContent = `Feels like: ${formatTemp(feels_like, unit)}`;
 
     const humidityDisplay = document.createElement("p");
     humidityDisplay.classList.add("humidityDisplay");
@@ -125,18 +141,43 @@ function displayWeatherInfo(data, unit) {
     descDisplay.classList.add("descDisplay");
     descDisplay.textContent = description;
 
-    const icon = document.createElement("p");
-    icon.classList.add("weatherEmoji");
-    icon.textContent = getWeatherEmoji(id);
+    const emoji = document.createElement("p");
+    emoji.classList.add("weatherEmoji");
+    emoji.textContent = getWeatherEmoji(id);
 
-    card.append(cityDisplay, localTimeDisplay, tempDisplay, feels, humidityDisplay, descDisplay, icon);
+    const timeBox = document.createElement("div");
+    timeBox.classList.add("timeBox");
+
+    const localP = document.createElement("p");
+    localP.textContent = "Local time: " + formatTime(local);
+
+    const sunriseP = document.createElement("p");
+    sunriseP.textContent = "Sunrise: " + formatTime(sunriseDate);
+
+    const sunsetP = document.createElement("p");
+    sunsetP.textContent = "Sunset: " + formatTime(sunsetDate);
+
+    timeBox.append(localP, sunriseP, sunsetP);
+
+    card.append(
+        cityDisplay,
+        tempDisplay,
+        feelsLikeDisplay,
+        humidityDisplay,
+        descDisplay,
+        emoji,
+        timeBox
+    );
 
     unitSelect.style.display = "inline-block";
 }
 
 function displayForecast(data, unit) {
     forecastContainer.innerHTML = "";
-    const filtered = data.list.filter(entry => entry.dt_txt.includes("12:00:00")).slice(0, 5);
+
+    const filtered = data.list.filter(item =>
+        item.dt_txt.includes("12:00:00")
+    ).slice(0, 5);
 
     if (!filtered.length) {
         forecastContainer.style.display = "none";
@@ -146,14 +187,14 @@ function displayForecast(data, unit) {
     forecastContainer.style.display = "flex";
 
     filtered.forEach(entry => {
-        const dayLabel = new Date(entry.dt_txt).toLocaleDateString("en-US", { weekday: "short" });
+        const dayName = new Date(entry.dt_txt).toLocaleDateString("en-US", { weekday: "short" });
 
-        const div = document.createElement("div");
-        div.classList.add("forecastCard");
+        const cardDiv = document.createElement("div");
+        cardDiv.classList.add("forecastCard");
 
-        const d = document.createElement("p");
-        d.classList.add("forecastDay");
-        d.textContent = dayLabel;
+        const day = document.createElement("p");
+        day.classList.add("forecastDay");
+        day.textContent = dayName;
 
         const temp = document.createElement("p");
         temp.classList.add("forecastTemp");
@@ -163,8 +204,8 @@ function displayForecast(data, unit) {
         const icon = document.createElement("p");
         icon.textContent = getWeatherEmoji(entry.weather[0].id);
 
-        div.append(d, temp, icon);
-        forecastContainer.appendChild(div);
+        cardDiv.append(day, temp, icon);
+        forecastContainer.appendChild(cardDiv);
     });
 }
 
@@ -179,13 +220,15 @@ function getWeatherEmoji(id) {
     return "❓";
 }
 
-function displayError(msg) {
+function displayError(message) {
     card.textContent = "";
+    card.style.display = "flex";
+
     const p = document.createElement("p");
     p.classList.add("errorDisplay");
-    p.textContent = msg instanceof Error ? msg.message : msg;
+    p.textContent = message instanceof Error ? message.message : message;
+
     card.appendChild(p);
-    card.style.display = "flex";
 
     forecastContainer.style.display = "none";
     unitSelect.style.display = "none";

@@ -63,11 +63,6 @@ h1 {
     margin-bottom: 10px;
 }
 
-.localTimeDisplay {
-    font-size: 1.3rem;
-    margin-bottom: 20px;
-}
-
 p {
     font-size: 1.5rem;
     margin: 5px 0;
@@ -91,6 +86,16 @@ p {
 .weatherEmoji {
     margin-top: 20px;
     font-size: 7.5rem;
+}
+
+.timeBox {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 1.3rem;
+}
+
+.timeBox p {
+    margin: 4px 0;
 }
 
 .errorDisplay {
