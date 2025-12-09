@@ -4,7 +4,7 @@ const card = document.querySelector(".card");
 const unitSelect = document.querySelector(".unitSelect");
 const forecastContainer = document.querySelector(".forecastContainer");
 
-const apiKey = "801f9cedc5e0d85ab51861971bd1be08";
+const apiKey = "YOUR_API_KEY";
 
 let currentTempKelvin = null;
 let currentFeelsLikeKelvin = null;
