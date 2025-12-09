@@ -9,6 +9,13 @@ body {
 
 .weatherForm {
     margin: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cityInputWrapper {
+    position: relative;
 }
 
 .cityInput {
@@ -17,8 +24,34 @@ body {
     font-weight: bold;
     border: 2px solid hsla(0, 0%, 20%, 0.3);
     border-radius: 10px;
-    margin: 10px;
+    margin: 10px 0;
     width: 300px;
+}
+
+.suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid hsla(0, 0%, 20%, 0.3);
+    border-top: none;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 20;
+    display: none;
+}
+
+.suggestionItem {
+    padding: 8px 10px;
+    font-size: 1.2rem;
+    cursor: pointer;
+}
+
+.suggestionItem:hover {
+    background-color: hsl(0, 0%, 90%);
 }
 
 button[type="submit"] {
@@ -43,7 +76,6 @@ button[type="submit"]:hover {
     font-weight: bold;
     border: 2px solid hsla(0, 0%, 20%, 0.3);
     border-radius: 10px;
-    margin: 10px;
     cursor: pointer;
 }
 

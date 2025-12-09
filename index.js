@@ -4,11 +4,14 @@ const card = document.querySelector(".card");
 const unitSelect = document.querySelector(".unitSelect");
 const forecastContainer = document.querySelector(".forecastContainer");
 const inputError = document.querySelector(".inputError");
+const suggestionsBox = document.querySelector(".suggestions");
 
-const apiKey = "YOUR_API_KEY";
+const apiKey = "801f9cedc5e0d85ab51861971bd1be08";
 
 let currentTempKelvin = null;
 let currentFeelsLikeKelvin = null;
+let suggestionTimeoutId = null;
+let selectedLocation = null;
 
 const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 function getCountryName(code) {
@@ -54,6 +57,77 @@ function showLoading() {
     unitSelect.style.display = "none";
 }
 
+function clearSuggestions() {
+    suggestionsBox.innerHTML = "";
+    suggestionsBox.style.display = "none";
+}
+
+cityInput.addEventListener("input", () => {
+    inputError.textContent = "";
+    selectedLocation = null;
+    const query = cityInput.value.trim();
+    clearTimeout(suggestionTimeoutId);
+
+    if (query.length < 2) {
+        clearSuggestions();
+        return;
+    }
+
+    suggestionTimeoutId = setTimeout(() => fetchSuggestions(query), 300);
+});
+
+async function fetchSuggestions(query) {
+    try {
+        const url = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(query)}&limit=5&appid=${apiKey}`;
+        const res = await fetch(url);
+        if (!res.ok) {
+            clearSuggestions();
+            return;
+        }
+        const locations = await res.json();
+        renderSuggestions(locations);
+    } catch {
+        clearSuggestions();
+    }
+}
+
+function renderSuggestions(locations) {
+    suggestionsBox.innerHTML = "";
+    if (!locations.length) {
+        suggestionsBox.style.display = "none";
+        return;
+    }
+
+    suggestionsBox.style.display = "block";
+
+    locations.forEach(loc => {
+        const item = document.createElement("div");
+        item.classList.add("suggestionItem");
+
+        const countryName = getCountryName(loc.country);
+        const parts = [loc.name];
+        if (loc.state) parts.push(loc.state);
+        parts.push(countryName);
+        const label = parts.join(", ");
+
+        item.textContent = label;
+
+        item.addEventListener("mousedown", () => {
+            selectedLocation = {
+                lat: loc.lat,
+                lon: loc.lon,
+                name: loc.name,
+                country: loc.country,
+                state: loc.state || ""
+            };
+            cityInput.value = label;
+            clearSuggestions();
+        });
+
+        suggestionsBox.appendChild(item);
+    });
+}
+
 weatherForm.addEventListener("submit", async event => {
     event.preventDefault();
     const city = cityInput.value.trim();
@@ -62,12 +136,24 @@ weatherForm.addEventListener("submit", async event => {
         return;
     }
 
+    clearSuggestions();
     showLoading();
 
     try {
+        let weatherPromise;
+        let forecastPromise;
+
+        if (selectedLocation) {
+            weatherPromise = getWeatherDataByCoords(selectedLocation.lat, selectedLocation.lon);
+            forecastPromise = getForecastDataByCoords(selectedLocation.lat, selectedLocation.lon);
+        } else {
+            weatherPromise = getWeatherData(city);
+            forecastPromise = getForecastData(city);
+        }
+
         const [weatherData, forecastData] = await Promise.all([
-            getWeatherData(city),
-            getForecastData(city)
+            weatherPromise,
+            forecastPromise
         ]);
 
         unitSelect.value = "celsius";
@@ -112,6 +198,20 @@ async function getForecastData(city) {
     return res.json();
 }
 
+async function getWeatherDataByCoords(lat, lon) {
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("City not found. Try again.");
+    return res.json();
+}
+
+async function getForecastDataByCoords(lat, lon) {
+    const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Could not load forecast.");
+    return res.json();
+}
+
 function setCardBackground(id) {
     if (id === 800)
         card.style.background = "linear-gradient(180deg, hsl(210, 100%, 70%), hsl(40, 100%, 75%))";
@@ -129,7 +229,6 @@ function displayWeatherInfo(data, unit) {
     inputError.textContent = "";
 
     const {
-        name: city,
         sys: { country, sunrise, sunset },
         timezone,
         main: { temp, humidity, feels_like },
@@ -148,7 +247,16 @@ function displayWeatherInfo(data, unit) {
     setCardBackground(id);
 
     const cityDisplay = document.createElement("h1");
-    cityDisplay.textContent = `${city}, ${getCountryName(country)}`;
+
+    if (selectedLocation) {
+        const countryName = getCountryName(selectedLocation.country);
+        const parts = [selectedLocation.name];
+        if (selectedLocation.state) parts.push(selectedLocation.state);
+        parts.push(countryName);
+        cityDisplay.textContent = parts.join(", ");
+    } else {
+        cityDisplay.textContent = `${data.name}, ${getCountryName(country)}`;
+    }
 
     const tempDisplay = document.createElement("p");
     tempDisplay.classList.add("tempDisplay");
