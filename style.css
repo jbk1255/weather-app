@@ -127,3 +127,24 @@ p {
 .forecastTemp {
     font-size: 1.2rem;
 }
+
+.loadingSpinner {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 6px solid rgba(255, 255, 255, 0.6);
+    border-top: 6px solid rgba(0, 0, 0, 0.8);
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+.loadingText {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-top: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

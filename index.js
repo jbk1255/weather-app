@@ -4,7 +4,7 @@ const card = document.querySelector(".card");
 const unitSelect = document.querySelector(".unitSelect");
 const forecastContainer = document.querySelector(".forecastContainer");
 
-const apiKey = "YOUR_API_KEY";
+const apiKey = "801f9cedc5e0d85ab51861971bd1be08";
 
 let currentTempKelvin = null;
 let currentFeelsLikeKelvin = null;
@@ -39,10 +39,25 @@ function getCityDateFromUtc(dt, offsetSec) {
     return new Date(utcMillis + (offsetSec - userOffset) * 1000);
 }
 
+function showLoading() {
+    card.style.display = "flex";
+    card.textContent = "";
+    const spinner = document.createElement("div");
+    spinner.classList.add("loadingSpinner");
+    const text = document.createElement("p");
+    text.classList.add("loadingText");
+    text.textContent = "Loading...";
+    card.append(spinner, text);
+    forecastContainer.style.display = "none";
+    unitSelect.style.display = "none";
+}
+
 weatherForm.addEventListener("submit", async event => {
     event.preventDefault();
     const city = cityInput.value.trim();
     if (!city) return displayError("Please enter a valid location.");
+
+    showLoading();
 
     try {
         const [weatherData, forecastData] = await Promise.all([
@@ -106,7 +121,6 @@ function setCardBackground(id) {
 }
 
 function displayWeatherInfo(data, unit) {
-
     const { name: city, sys: { country, sunrise, sunset }, timezone,
             main: { temp, humidity, feels_like },
             weather: [{ description, id }] } = data;
