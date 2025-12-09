@@ -47,6 +47,14 @@ button[type="submit"]:hover {
     cursor: pointer;
 }
 
+.inputError {
+    margin: 0 0 10px 0;
+    min-height: 1.5rem;
+    font-size: 1rem;
+    color: #c62828;
+    font-weight: bold;
+}
+
 .card {
     background: linear-gradient(180deg, hsl(210, 100%, 75%), hsl(40, 100%, 75%));
     padding: 50px;

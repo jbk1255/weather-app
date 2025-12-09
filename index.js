@@ -3,6 +3,7 @@ const cityInput = document.querySelector(".cityInput");
 const card = document.querySelector(".card");
 const unitSelect = document.querySelector(".unitSelect");
 const forecastContainer = document.querySelector(".forecastContainer");
+const inputError = document.querySelector(".inputError");
 
 const apiKey = "801f9cedc5e0d85ab51861971bd1be08";
 
@@ -40,6 +41,7 @@ function getCityDateFromUtc(dt, offsetSec) {
 }
 
 function showLoading() {
+    inputError.textContent = "";
     card.style.display = "flex";
     card.textContent = "";
     const spinner = document.createElement("div");
@@ -55,7 +57,10 @@ function showLoading() {
 weatherForm.addEventListener("submit", async event => {
     event.preventDefault();
     const city = cityInput.value.trim();
-    if (!city) return displayError("Please enter a valid location.");
+    if (!city) {
+        displayError("Please enter a valid location.");
+        return;
+    }
 
     showLoading();
 
@@ -94,14 +99,14 @@ unitSelect.addEventListener("change", () => {
 });
 
 async function getWeatherData(city) {
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`;
+    const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${apiKey}`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error("Invalid city name.");
+    if (!res.ok) throw new Error("City not found. Try again.");
     return res.json();
 }
 
 async function getForecastData(city) {
-    const url = `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${apiKey}`;
+    const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&appid=${apiKey}`;
     const res = await fetch(url);
     if (!res.ok) throw new Error("Could not load forecast.");
     return res.json();
@@ -132,6 +137,8 @@ function getMainWeatherEmoji(id, localDate) {
 }
 
 function displayWeatherInfo(data, unit) {
+    inputError.textContent = "";
+
     const { name: city, sys: { country, sunrise, sunset }, timezone,
             main: { temp, humidity, feels_like },
             weather: [{ description, id }] } = data;
@@ -246,15 +253,10 @@ function getWeatherEmoji(id) {
 }
 
 function displayError(message) {
-    card.textContent = "";
-    card.style.display = "flex";
+    const text = message instanceof Error ? message.message : message;
+    inputError.textContent = text;
 
-    const p = document.createElement("p");
-    p.classList.add("errorDisplay");
-    p.textContent = message instanceof Error ? message.message : message;
-
-    card.appendChild(p);
-
+    card.style.display = "none";
     forecastContainer.style.display = "none";
     unitSelect.style.display = "none";
 
