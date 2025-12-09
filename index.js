@@ -4,7 +4,7 @@ const card = document.querySelector(".card");
 const unitSelect = document.querySelector(".unitSelect");
 const forecastContainer = document.querySelector(".forecastContainer");
 
-const apiKey = "YOUR_API_KEY";
+const apiKey = "801f9cedc5e0d85ab51861971bd1be08";
 
 let currentTempKelvin = null;
 let currentFeelsLikeKelvin = null;
@@ -120,6 +120,17 @@ function setCardBackground(id) {
         card.style.background = "linear-gradient(180deg, hsl(210, 20%, 80%), hsl(0, 0%, 70%))";
 }
 
+function getMainWeatherEmoji(id, localDate) {
+    const hour = localDate.getHours();
+    const isNight = hour >= 18 || hour < 5;
+
+    if (id === 800) {
+        return isNight ? "🌙" : "☀";
+    }
+
+    return getWeatherEmoji(id);
+}
+
 function displayWeatherInfo(data, unit) {
     const { name: city, sys: { country, sunrise, sunset }, timezone,
             main: { temp, humidity, feels_like },
@@ -157,7 +168,7 @@ function displayWeatherInfo(data, unit) {
 
     const emoji = document.createElement("p");
     emoji.classList.add("weatherEmoji");
-    emoji.textContent = getWeatherEmoji(id);
+    emoji.textContent = getMainWeatherEmoji(id, local);
 
     const timeBox = document.createElement("div");
     timeBox.classList.add("timeBox");
