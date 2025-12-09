@@ -6,7 +6,7 @@ const forecastContainer = document.querySelector(".forecastContainer");
 const inputError = document.querySelector(".inputError");
 const suggestionsBox = document.querySelector(".suggestions");
 
-const apiKey = "801f9cedc5e0d85ab51861971bd1be08";
+const apiKey = "YOUR API KEY";
 
 let currentTempKelvin = null;
 let currentFeelsLikeKelvin = null;
