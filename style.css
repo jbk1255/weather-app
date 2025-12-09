@@ -91,9 +91,11 @@ p {
     font-size: 2rem;
 }
 
-.weatherEmoji {
+.weatherIcon {
     margin-top: 20px;
-    font-size: 7.5rem;
+    width: 150px;
+    height: 150px;
+    object-fit: contain;
 }
 
 .timeBox {
@@ -134,6 +136,13 @@ p {
 
 .forecastTemp {
     font-size: 1.2rem;
+}
+
+.forecastIcon {
+    width: 50px;
+    height: 50px;
+    object-fit: contain;
+    margin-top: 5px;
 }
 
 .loadingSpinner {
