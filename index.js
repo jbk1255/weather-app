@@ -8,7 +8,7 @@ const suggestionsBox = document.querySelector(".suggestions");
 const geoButton = document.querySelector(".geoButton");
 const selectedDayInfo = document.querySelector(".selectedDayInfo");
 
-const apiKey = "801f9cedc5e0d85ab51861971bd1be08";
+const apiKey = "YOUR_API_KEY";
 const LAST_SEARCH_KEY = "weatherAppLastSearch";
 
 let currentTempKelvin = null;
