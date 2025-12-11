@@ -5,13 +5,17 @@ const unitSelect = document.querySelector(".unitSelect");
 const forecastContainer = document.querySelector(".forecastContainer");
 const inputError = document.querySelector(".inputError");
 const suggestionsBox = document.querySelector(".suggestions");
+const geoButton = document.querySelector(".geoButton");
+const selectedDayInfo = document.querySelector(".selectedDayInfo");
 
-const apiKey = "YOUR_API_KEY";
+const apiKey = "801f9cedc5e0d85ab51861971bd1be08";
+const LAST_SEARCH_KEY = "weatherAppLastSearch";
 
 let currentTempKelvin = null;
 let currentFeelsLikeKelvin = null;
 let selectedLocation = null;
 let suggestionTimeoutId = null;
+let forecastEntries = [];
 
 const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
 function getCountryName(code) {
@@ -144,6 +148,20 @@ weatherForm.addEventListener("submit", async event => {
             forecastPromise
         ]);
 
+        if (selectedLocation) {
+            saveLastSearch({
+                mode: "coords",
+                lat: selectedLocation.lat,
+                lon: selectedLocation.lon,
+                label: cityInput.value
+            });
+        } else {
+            saveLastSearch({
+                mode: "city",
+                name: cityInput.value
+            });
+        }
+
         unitSelect.value = "celsius";
         displayWeather(weatherData, "celsius");
         displayForecast(forecastData, "celsius");
@@ -172,6 +190,15 @@ unitSelect.addEventListener("change", () => {
         const k = Number(el.dataset.kelvin);
         el.textContent = formatTemp(k, unit);
     });
+
+    if (forecastEntries.length > 0 && selectedDayInfo.classList.contains("selectedDayInfoVisible")) {
+        const cards = forecastContainer.querySelectorAll(".forecastCard");
+        let activeIndex = -1;
+        cards.forEach((c, i) => {
+            if (c.classList.contains("forecastCardActive")) activeIndex = i;
+        });
+        if (activeIndex >= 0) handleForecastClick(activeIndex);
+    }
 });
 
 async function getWeather(city) {
@@ -191,7 +218,7 @@ async function getForecast(city) {
 async function getWeatherByCoords(lat, lon) {
     const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error("City not found.");
+    if (!res.ok) throw new Error("Location not found.");
     return res.json();
 }
 
@@ -204,12 +231,19 @@ async function getForecastByCoords(lat, lon) {
 
 function showLoading() {
     card.style.display = "flex";
+    card.style.opacity = "1";
+    card.style.transform = "none";
+    card.classList.remove("cardAnimate");
+
     card.innerHTML = `
         <div class="loadingSpinner"></div>
         <p class="loadingText">Loading...</p>
     `;
+
     forecastContainer.style.display = "none";
     unitSelect.style.display = "none";
+    selectedDayInfo.textContent = "";
+    selectedDayInfo.classList.remove("selectedDayInfoVisible");
 }
 
 function displayWeather(data, unit) {
@@ -227,6 +261,10 @@ function displayWeather(data, unit) {
 
     card.innerHTML = "";
     card.style.display = "flex";
+
+    card.style.opacity = "";
+    card.style.transform = "";
+    card.classList.remove("cardAnimate");
 
     setWeatherBackground(id);
 
@@ -275,6 +313,9 @@ function displayWeather(data, unit) {
     card.append(h1, tempBlock, descP, iconImg, timeBox);
 
     unitSelect.style.display = "inline-block";
+
+    void card.offsetWidth;
+    card.classList.add("cardAnimate");
 }
 
 function setWeatherBackground(id) {
@@ -294,6 +335,9 @@ function displayForecast(data, unit) {
     forecastContainer.innerHTML = "";
 
     const filtered = data.list.filter(x => x.dt_txt.includes("12:00:00")).slice(0, 5);
+    forecastEntries = filtered;
+    selectedDayInfo.textContent = "";
+    selectedDayInfo.classList.remove("selectedDayInfoVisible");
 
     if (!filtered.length) {
         forecastContainer.style.display = "none";
@@ -302,7 +346,7 @@ function displayForecast(data, unit) {
 
     forecastContainer.style.display = "flex";
 
-    filtered.forEach(entry => {
+    filtered.forEach((entry, index) => {
         const cardDiv = document.createElement("div");
         cardDiv.classList.add("forecastCard");
 
@@ -321,8 +365,33 @@ function displayForecast(data, unit) {
             <p class="forecastDesc">${description}</p>
         `;
 
+        cardDiv.addEventListener("click", () => handleForecastClick(index));
+
         forecastContainer.appendChild(cardDiv);
     });
+
+    forecastContainer.classList.remove("forecastAnimate");
+    void forecastContainer.offsetWidth;
+    forecastContainer.classList.add("forecastAnimate");
+}
+
+function handleForecastClick(index) {
+    const cards = forecastContainer.querySelectorAll(".forecastCard");
+    cards.forEach(c => c.classList.remove("forecastCardActive"));
+
+    const activeCard = cards[index];
+    const entry = forecastEntries[index];
+    if (!activeCard || !entry) return;
+
+    activeCard.classList.add("forecastCardActive");
+
+    const unit = unitSelect.value || "celsius";
+    const dayLabel = new Date(entry.dt_txt).toLocaleDateString("en-US", { weekday: "short" }).toUpperCase();
+    const tempStr = formatTemp(entry.main.temp, unit);
+    const desc = entry.weather[0].description;
+
+    selectedDayInfo.textContent = `${dayLabel} — ${tempStr}, ${desc}`;
+    selectedDayInfo.classList.add("selectedDayInfoVisible");
 }
 
 function displayError(message) {
@@ -332,6 +401,107 @@ function displayError(message) {
     card.style.display = "none";
     forecastContainer.style.display = "none";
     unitSelect.style.display = "none";
+    selectedDayInfo.textContent = "";
+    selectedDayInfo.classList.remove("selectedDayInfoVisible");
     currentTempKelvin = null;
     currentFeelsLikeKelvin = null;
 }
+
+function saveLastSearch(data) {
+    try {
+        localStorage.setItem(LAST_SEARCH_KEY, JSON.stringify(data));
+    } catch {}
+}
+
+function loadLastSearch() {
+    try {
+        const raw = localStorage.getItem(LAST_SEARCH_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
+}
+
+if (geoButton) {
+    geoButton.addEventListener("click", () => {
+        if (!navigator.geolocation) {
+            displayError("Geolocation is not supported on this browser.");
+            return;
+        }
+
+        geoButton.disabled = true;
+        geoButton.textContent = "Locating...";
+
+        navigator.geolocation.getCurrentPosition(
+            async pos => {
+                const { latitude, longitude } = pos.coords;
+                clearSuggestions();
+                showLoading();
+                try {
+                    const [weatherData, forecastData] = await Promise.all([
+                        getWeatherByCoords(latitude, longitude),
+                        getForecastByCoords(latitude, longitude)
+                    ]);
+
+                    selectedLocation = null;
+                    cityInput.value = "Current location";
+
+                    saveLastSearch({
+                        mode: "coords",
+                        lat: latitude,
+                        lon: longitude,
+                        label: "Current location"
+                    });
+
+                    unitSelect.value = "celsius";
+                    displayWeather(weatherData, "celsius");
+                    displayForecast(forecastData, "celsius");
+                } catch (err) {
+                    displayError(err);
+                } finally {
+                    geoButton.disabled = false;
+                    geoButton.textContent = "Use My Location";
+                }
+            },
+            () => {
+                displayError("Could not get your location.");
+                geoButton.disabled = false;
+                geoButton.textContent = "Use My Location";
+            }
+        );
+    });
+}
+
+window.addEventListener("load", async () => {
+    cityInput.focus();
+    const last = loadLastSearch();
+    if (!last) return;
+
+    try {
+        showLoading();
+        let weatherData;
+        let forecastData;
+
+        if (last.mode === "coords") {
+            weatherData = await getWeatherByCoords(last.lat, last.lon);
+            forecastData = await getForecastByCoords(last.lat, last.lon);
+            cityInput.value = last.label || "Last location";
+        } else if (last.mode === "city") {
+            weatherData = await getWeather(last.name);
+            forecastData = await getForecast(last.name);
+            cityInput.value = last.name;
+        } else {
+            card.style.display = "none";
+            forecastContainer.style.display = "none";
+            return;
+        }
+
+        unitSelect.value = "celsius";
+        displayWeather(weatherData, "celsius");
+        displayForecast(forecastData, "celsius");
+    } catch {
+        card.style.display = "none";
+        forecastContainer.style.display = "none";
+    }
+});
