@@ -7,6 +7,8 @@ const inputError = document.querySelector(".inputError");
 const suggestionsBox = document.querySelector(".suggestions");
 const geoButton = document.querySelector(".geoButton");
 const selectedDayInfo = document.querySelector(".selectedDayInfo");
+const homeLogo = document.getElementById("homeLogo");
+const appRoot = document.getElementById("appRoot");
 
 const apiKey = "YOUR_API_KEY";
 const LAST_SEARCH_KEY = "weatherAppLastSearch";
@@ -18,6 +20,7 @@ let suggestionTimeoutId = null;
 let forecastEntries = [];
 
 const regionNames = new Intl.DisplayNames(["en"], { type: "region" });
+
 function getCountryName(code) {
     return regionNames.of(code) || code;
 }
@@ -50,6 +53,48 @@ function getCityDateFromUtc(dt, offsetSec) {
 function clearSuggestions() {
     suggestionsBox.innerHTML = "";
     suggestionsBox.style.display = "none";
+}
+
+function setResultsMode(enabled) {
+    if (!appRoot) return;
+    appRoot.classList.toggle("resultsMode", enabled);
+}
+
+function resetToHome() {
+    selectedLocation = null;
+    forecastEntries = [];
+    currentTempKelvin = null;
+    currentFeelsLikeKelvin = null;
+
+    try {
+        localStorage.removeItem(LAST_SEARCH_KEY);
+    } catch {}
+
+    clearSuggestions();
+
+    inputError.textContent = "";
+    inputError.classList.remove("inputErrorVisible");
+    cityInput.classList.remove("cityInputError");
+
+    cityInput.value = "";
+    cityInput.placeholder = "Enter location";
+
+    card.style.display = "none";
+    forecastContainer.style.display = "none";
+    unitSelect.style.display = "none";
+    selectedDayInfo.textContent = "";
+    selectedDayInfo.classList.remove("selectedDayInfoVisible");
+
+    setResultsMode(false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    cityInput.focus();
+}
+
+if (homeLogo) {
+    homeLogo.addEventListener("click", (e) => {
+        e.preventDefault();
+        resetToHome();
+    });
 }
 
 cityInput.addEventListener("input", () => {
@@ -143,10 +188,7 @@ weatherForm.addEventListener("submit", async event => {
             forecastPromise = getForecast(city);
         }
 
-        const [weatherData, forecastData] = await Promise.all([
-            weatherPromise,
-            forecastPromise
-        ]);
+        const [weatherData, forecastData] = await Promise.all([weatherPromise, forecastPromise]);
 
         if (selectedLocation) {
             saveLastSearch({
@@ -165,6 +207,7 @@ weatherForm.addEventListener("submit", async event => {
         unitSelect.value = "celsius";
         displayWeather(weatherData, "celsius");
         displayForecast(forecastData, "celsius");
+        setResultsMode(true);
     } catch (error) {
         displayError(error);
     }
@@ -178,12 +221,8 @@ unitSelect.addEventListener("change", () => {
     const tempDisplay = card.querySelector(".tempDisplay");
     const feelsLikeDisplay = card.querySelector(".feelsLikeDisplay");
 
-    if (tempDisplay) {
-        tempDisplay.textContent = formatTemp(currentTempKelvin, unit);
-    }
-    if (feelsLikeDisplay) {
-        feelsLikeDisplay.textContent = `Feels like: ${formatTemp(currentFeelsLikeKelvin, unit)}`;
-    }
+    if (tempDisplay) tempDisplay.textContent = formatTemp(currentTempKelvin, unit);
+    if (feelsLikeDisplay) feelsLikeDisplay.textContent = `Feels like: ${formatTemp(currentFeelsLikeKelvin, unit)}`;
 
     const forecastTemps = document.querySelectorAll(".forecastTemp");
     forecastTemps.forEach(el => {
@@ -366,7 +405,6 @@ function displayForecast(data, unit) {
         `;
 
         cardDiv.addEventListener("click", () => handleForecastClick(index));
-
         forecastContainer.appendChild(cardDiv);
     });
 
@@ -398,13 +436,17 @@ function displayError(message) {
     inputError.textContent = message instanceof Error ? message.message : message;
     inputError.classList.add("inputErrorVisible");
     cityInput.classList.add("cityInputError");
+
     card.style.display = "none";
     forecastContainer.style.display = "none";
     unitSelect.style.display = "none";
+
     selectedDayInfo.textContent = "";
     selectedDayInfo.classList.remove("selectedDayInfoVisible");
+
     currentTempKelvin = null;
     currentFeelsLikeKelvin = null;
+    setResultsMode(false);
 }
 
 function saveLastSearch(data) {
@@ -438,6 +480,7 @@ if (geoButton) {
                 const { latitude, longitude } = pos.coords;
                 clearSuggestions();
                 showLoading();
+
                 try {
                     const [weatherData, forecastData] = await Promise.all([
                         getWeatherByCoords(latitude, longitude),
@@ -457,6 +500,7 @@ if (geoButton) {
                     unitSelect.value = "celsius";
                     displayWeather(weatherData, "celsius");
                     displayForecast(forecastData, "celsius");
+                    setResultsMode(true);
                 } catch (err) {
                     displayError(err);
                 } finally {
@@ -474,23 +518,27 @@ if (geoButton) {
 }
 
 window.addEventListener("load", async () => {
+    cityInput.value = "";
+    setResultsMode(false);
     cityInput.focus();
+
     const last = loadLastSearch();
     if (!last) return;
 
     try {
         showLoading();
+
         let weatherData;
         let forecastData;
 
         if (last.mode === "coords") {
             weatherData = await getWeatherByCoords(last.lat, last.lon);
             forecastData = await getForecastByCoords(last.lat, last.lon);
-            cityInput.value = last.label || "Last location";
+            cityInput.value = last.label || "";
         } else if (last.mode === "city") {
             weatherData = await getWeather(last.name);
             forecastData = await getForecast(last.name);
-            cityInput.value = last.name;
+            cityInput.value = last.name || "";
         } else {
             card.style.display = "none";
             forecastContainer.style.display = "none";
@@ -500,8 +548,8 @@ window.addEventListener("load", async () => {
         unitSelect.value = "celsius";
         displayWeather(weatherData, "celsius");
         displayForecast(forecastData, "celsius");
+        setResultsMode(true);
     } catch {
-        card.style.display = "none";
-        forecastContainer.style.display = "none";
+        resetToHome();
     }
 });

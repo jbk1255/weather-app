@@ -3,14 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather App</title>
+    <title>Weatherly</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="overlay">
+    <div class="overlay" id="appRoot">
+        <a href="index.html" class="logoLink" id="homeLogo" aria-label="Go to homepage">
+            <img src="weatherly_icon_transparent.png" alt="Weatherly" class="logoIcon">
+        </a>
+
+        <h1 class="appTitle">WEATHERLY</h1>
+
         <form class="weatherForm">
             <div class="cityInputWrapper">
-                <input type="text" class="cityInput" placeholder="Enter location">
+                <input type="text" class="cityInput" placeholder="Enter location" autocomplete="off">
                 <div class="suggestions"></div>
             </div>
 
@@ -23,6 +29,13 @@
             <button type="submit">Get Weather</button>
             <button type="button" class="geoButton">Use My Location</button>
         </form>
+
+        <div class="homeInfo" id="homeInfo">
+            <p class="homeBlurb">
+                Weatherly is a simple weather app that lets you quickly check current conditions and a 5-day outlook for any location.
+            </p>
+            <p class="homeDev">Developed by <strong>John Kollannur</strong></p>
+        </div>
 
         <p class="inputError"></p>
 
