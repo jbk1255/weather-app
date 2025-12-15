@@ -14,6 +14,8 @@
 
         <h1 class="appTitle">WEATHERLY</h1>
 
+        <button type="button" class="addFavTopBtn" id="addFavTopBtn">Add location to favourites</button>
+
         <form class="weatherForm">
             <div class="cityInputWrapper">
                 <input type="text" class="cityInput" placeholder="Enter location" autocomplete="off">
@@ -30,14 +32,23 @@
             <button type="button" class="geoButton">Use My Location</button>
         </form>
 
+        <p class="inputError"></p>
+
+        <div class="favoritesBar">
+            <div class="favoritesHeader">
+                <span class="favoritesTitle">Favourite Locations</span>
+            </div>
+            <div class="favoritesList" id="favoritesList"></div>
+        </div>
+
+        <div class="alertsBanner" id="alertsBanner" aria-live="polite"></div>
+
         <div class="homeInfo" id="homeInfo">
             <p class="homeBlurb">
                 Weatherly is a simple weather app that lets you quickly check current conditions and a 5-day outlook for any location.
             </p>
             <p class="homeDev">Developed by <strong>John Kollannur</strong></p>
         </div>
-
-        <p class="inputError"></p>
 
         <div class="card" style="display: none"></div>
         <p class="selectedDayInfo"></p>

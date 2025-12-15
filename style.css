@@ -1,419 +1,637 @@
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background-image: url("clouds.png");
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background-image: url("clouds.png");
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
 }
 
 .overlay {
-    background: rgba(0, 0, 0, 0.45);
-    min-height: 100vh;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-bottom: 40px;
+  background: rgba(0, 0, 0, 0.45);
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 40px;
+  position: relative;
 }
 
 .logoLink {
-    margin-top: 26px;
-    display: inline-block;
-    cursor: pointer;
+  margin-top: 26px;
+  display: inline-block;
+  cursor: pointer;
 }
 
 .logoIcon {
-    width: 110px;
-    height: auto;
-    filter: drop-shadow(0 6px 14px rgba(0,0,0,0.45));
-    transition: transform 0.2s ease, filter 0.2s ease;
+  width: 110px;
+  height: auto;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.45));
+  transition: transform 0.2s ease, filter 0.2s ease;
 }
 
 .logoIcon:hover {
-    transform: scale(1.06);
-    filter: drop-shadow(0 10px 18px rgba(0,0,0,0.6));
+  transform: scale(1.06);
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.6));
 }
 
 .appTitle {
-    margin: 10px 0 14px 0;
-    font-size: 4rem;
-    letter-spacing: 0.18em;
-    font-weight: 900;
-    color: #ffffff;
-    text-shadow: 0 8px 18px rgba(0,0,0,0.55);
+  margin: 10px 0 14px 0;
+  font-size: 4rem;
+  letter-spacing: 0.18em;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 8px 18px rgba(0, 0, 0, 0.55);
+}
+
+.addFavTopBtn {
+  display: none;
+  position: absolute;
+  top: 22px;
+  right: 22px;
+  padding: 12px 16px;
+  font-weight: 900;
+  font-size: 1rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.92);
+  color: #1b5e20;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(6px);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, opacity 0.12s ease;
+  z-index: 5;
+}
+
+.addFavTopBtn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.35);
+}
+
+.addFavTopBtn:disabled {
+  opacity: 0.65;
+  cursor: default;
 }
 
 .homeInfo {
-    margin-top: 18px;
-    max-width: 820px;
-    width: min(820px, calc(100% - 36px));
-    padding: 0 18px;
-    color: rgba(255,255,255,0.92);
-    text-shadow: 0 0 10px rgba(0,0,0,0.55);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+  margin-top: 18px;
+  max-width: 820px;
+  width: min(820px, calc(100% - 36px));
+  padding: 0 18px;
+  color: rgba(255, 255, 255, 0.92);
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+/* "column newspaper" look: fixed readable width + balanced wrapping */
+.homeBlurb,
+.homeDev {
+  max-width: 56ch;
+  width: 100%;
+  text-align: center;
+  text-wrap: balance;
 }
 
 .homeBlurb {
-    margin: 0 0 10px 0;
-    font-size: 1.4rem;
-    line-height: 1.55;
-    max-width: 56ch;
-    text-wrap: balance;
+  margin: 0 0 10px 0;
+  font-size: 1.4rem;
+  line-height: 1.55;
 }
 
 .homeDev {
-    margin: 0;
-    font-size: 1.35rem;
-    opacity: 0.95;
-    max-width: 56ch;
-    text-wrap: balance;
+  margin: 0;
+  font-size: 1.35rem;
+  opacity: 0.95;
 }
 
 .resultsMode .homeInfo {
-    display: none;
+  display: none;
 }
 
 .resultsMode .logoIcon {
-    width: 64px;
+  width: 64px;
 }
 
 .resultsMode .appTitle {
-    font-size: 2.2rem;
-    margin-bottom: 10px;
+  font-size: 2.2rem;
+  margin-bottom: 10px;
+}
+
+.resultsMode .favoritesBar {
+  display: none;
+}
+
+.resultsMode .addFavTopBtn {
+  display: inline-flex;
 }
 
 .weatherForm {
-    margin-top: 18px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    justify-content: center;
+  margin-top: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .cityInputWrapper {
-    position: relative;
+  position: relative;
 }
 
 .cityInput {
-    padding: 10px;
-    font-size: 2rem;
-    font-weight: bold;
-    border: 2px solid hsla(0, 0%, 20%, 0.3);
-    border-radius: 10px;
-    width: 420px;
-    transition: box-shadow 0.18s ease, border-color 0.18s ease;
+  padding: 10px;
+  font-size: 2rem;
+  font-weight: bold;
+  border: 2px solid hsla(0, 0%, 20%, 0.3);
+  border-radius: 10px;
+  width: 420px;
+  transition: box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
 .cityInputError {
-    border-color: #ff8a80;
-    box-shadow: 0 0 0 3px rgba(255, 138, 128, 0.7);
+  border-color: #ff8a80;
+  box-shadow: 0 0 0 3px rgba(255, 138, 128, 0.7);
 }
 
 .suggestions {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    width: 100%;
-    background: white;
-    border-radius: 10px;
-    margin-top: 5px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
-    max-height: 220px;
-    overflow-y: auto;
-    display: none;
-    z-index: 999;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  background: white;
+  border-radius: 10px;
+  margin-top: 5px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  max-height: 220px;
+  overflow-y: auto;
+  display: none;
+  z-index: 999;
 }
 
 .suggestionItem {
-    padding: 10px 12px;
-    cursor: pointer;
-    font-size: 1rem;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 1rem;
 }
 
 .suggestionItem:hover {
-    background: #f0f0f0;
+  background: #f0f0f0;
 }
 
 button[type="submit"] {
-    padding: 10px 20px;
-    font-weight: bold;
-    font-size: 2rem;
-    background-color: hsl(122, 39%, 50%);
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
+  padding: 10px 20px;
+  font-weight: bold;
+  font-size: 2rem;
+  background-color: hsl(122, 39%, 50%);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
 }
 
 button[type="submit"]:hover {
-    background-color: hsl(122, 39%, 40%);
+  background-color: hsl(122, 39%, 40%);
 }
 
 .geoButton {
-    padding: 10px 16px;
-    font-weight: bold;
-    font-size: 1.1rem;
-    background-color: rgba(255,255,255,0.9);
-    color: #2e7d32;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-left: 4px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.35);
-    transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.1s ease, opacity 0.1s ease;
+  padding: 10px 16px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  background-color: rgba(255, 255, 255, 0.9);
+  color: #2e7d32;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  margin-left: 4px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  transition: transform 0.1s ease, box-shadow 0.1s ease,
+    background-color 0.1s ease, opacity 0.1s ease;
 }
 
 .geoButton:hover:not(:disabled) {
-    background-color: #ffffff;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.45);
+  background-color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.45);
 }
 
 .geoButton:disabled {
-    opacity: 0.7;
-    cursor: default;
-    transform: none;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.35);
+  opacity: 0.7;
+  cursor: default;
+  transform: none;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
 }
 
 .unitSelect {
-    display: none;
-    padding: 10px;
-    font-size: 1.5rem;
-    font-weight: bold;
-    border-radius: 10px;
-    border: 2px solid hsla(0, 0%, 20%, 0.3);
-    cursor: pointer;
+  display: none;
+  padding: 10px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  border-radius: 10px;
+  border: 2px solid hsla(0, 0%, 20%, 0.3);
+  cursor: pointer;
+}
+
+.favoritesBar {
+  margin-top: 14px;
+  width: min(920px, calc(100% - 36px));
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.favoritesHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.favoritesTitle {
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.95rem;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.favoritesList {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.favChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+  cursor: pointer;
+  user-select: none;
+  transition: transform 0.14s ease, box-shadow 0.14s ease;
+  max-width: 100%;
+}
+
+.favChip:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.32);
+}
+
+.favChipText {
+  font-weight: 900;
+  font-size: 1rem;
+  color: #263238;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: min(340px, calc(100vw - 140px));
+}
+
+.favChipRemove {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.08);
+  cursor: pointer;
+  font-weight: 900;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(0, 0, 0, 0.65);
+  transition: background 0.12s ease, transform 0.12s ease;
+}
+
+.favChipRemove:hover {
+  background: rgba(239, 83, 80, 0.18);
+  transform: scale(1.05);
+}
+
+.favEmpty {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 700;
+  opacity: 0.9;
+  text-align: center;
+  width: 100%;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+.alertsBanner {
+  margin-top: 12px;
+  width: min(920px, calc(100% - 36px));
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 16px;
+  background: rgba(255, 193, 7, 0.92);
+  color: rgba(30, 30, 30, 0.95);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.alertsBannerVisible {
+  display: flex;
+  animation: fadeUp 0.28s ease forwards;
+}
+
+.alertsText {
+  font-size: 1.05rem;
+  font-weight: 900;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alertsClose {
+  border: none;
+  background: rgba(0, 0, 0, 0.08);
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  cursor: pointer;
+  font-weight: 900;
+  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.12s ease, background 0.12s ease;
+}
+
+.alertsClose:hover {
+  transform: scale(1.04);
+  background: rgba(0, 0, 0, 0.12);
 }
 
 .inputError {
-    margin: 10px 0 10px 0;
-    min-height: 1.4rem;
-    font-size: 1.1rem;
-    color: #ffebee;
-    font-weight: 800;
-    letter-spacing: 0.03em;
-    text-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
-    padding: 6px 14px;
-    border-radius: 999px;
-    background: rgba(239, 83, 80, 0.9);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 0.18s ease, transform 0.18s ease;
+  margin: 10px 0 10px 0;
+  min-height: 1.4rem;
+  font-size: 1.1rem;
+  color: #ffebee;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(239, 83, 80, 0.9);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
 .inputErrorVisible {
-    opacity: 1;
-    transform: translateY(0);
-    animation: errorShake 0.22s ease-in-out 0s 2;
+  opacity: 1;
+  transform: translateY(0);
+  animation: errorShake 0.22s ease-in-out 0s 2;
 }
 
 .card {
-    background: linear-gradient(180deg, hsla(210, 100%, 75%, 0.95), hsla(40, 100%, 75%, 0.95));
-    padding: 50px;
-    border-radius: 10px;
-    box-shadow: 2px 2px 8px hsla(0, 0%, 0, 0.7);
-    min-width: 320px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 12px;
-    opacity: 0;
-    transform: translateY(8px);
+  background: linear-gradient(
+    180deg,
+    hsla(210, 100%, 75%, 0.95),
+    hsla(40, 100%, 75%, 0.95)
+  );
+  padding: 50px;
+  border-radius: 10px;
+  box-shadow: 2px 2px 8px hsla(0, 0%, 0, 0.7);
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 12px;
+  opacity: 0;
+  transform: translateY(8px);
 }
 
 .cardAnimate {
-    animation: fadeUp 0.35s ease forwards;
+  animation: fadeUp 0.35s ease forwards;
 }
 
 h1 {
-    margin: 0 0 10px 0;
+  margin: 0 0 10px 0;
 }
 
 p {
-    margin: 5px 0;
-    font-size: 1.5rem;
+  margin: 5px 0;
+  font-size: 1.5rem;
 }
 
 .temperatureBlock {
-    text-align: center;
-    margin: 15px 0;
-    padding: 10px 0;
-    width: 100%;
-    border-top: 2px solid rgba(255, 255, 255, 0.25);
-    border-bottom: 2px solid rgba(255, 255, 255, 0.25);
+  text-align: center;
+  margin: 15px 0;
+  padding: 10px 0;
+  width: 100%;
+  border-top: 2px solid rgba(255, 255, 255, 0.25);
+  border-bottom: 2px solid rgba(255, 255, 255, 0.25);
 }
 
 .tempDisplay {
-    font-size: 4.2rem;
-    font-weight: 900;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    letter-spacing: -1px;
-    text-shadow: 0px 0px 12px rgba(255, 255, 255, 0.6);
+  font-size: 4.2rem;
+  font-weight: 900;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  letter-spacing: -1px;
+  text-shadow: 0px 0px 12px rgba(255, 255, 255, 0.6);
 }
 
 .feelsLikeDisplay {
-    font-size: 1.8rem;
-    font-weight: 600;
+  font-size: 1.8rem;
+  font-weight: 600;
 }
 
 .humidityDisplay {
-    font-size: 1.7rem;
-    font-weight: 600;
+  font-size: 1.7rem;
+  font-weight: 600;
 }
 
 .descDisplay {
-    font-style: italic;
-    font-weight: bold;
-    font-size: 2rem;
-    text-align: center;
+  font-style: italic;
+  font-weight: bold;
+  font-size: 2rem;
+  text-align: center;
 }
 
 .weatherIcon {
-    width: 150px;
-    height: 150px;
-    margin-top: 20px;
+  width: 150px;
+  height: 150px;
+  margin-top: 20px;
 }
 
 .timeBox {
-    margin-top: 20px;
-    text-align: center;
-    font-size: 1.3rem;
+  margin-top: 20px;
+  text-align: center;
+  font-size: 1.3rem;
 }
 
 .timeBox p {
-    margin: 4px 0;
+  margin: 4px 0;
 }
 
 .forecastContainer {
-    display: flex;
-    gap: 18px;
-    margin-top: 25px;
-    padding: 10px 0 20px;
-    flex-wrap: wrap;
-    justify-content: center;
-    opacity: 0;
-    transform: translateY(8px);
+  display: flex;
+  gap: 18px;
+  margin-top: 25px;
+  padding: 10px 0 20px;
+  flex-wrap: wrap;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(8px);
 }
 
 .forecastAnimate {
-    animation: fadeUp 0.35s ease forwards;
+  animation: fadeUp 0.35s ease forwards;
 }
 
 .forecastCard {
-    background: linear-gradient(160deg, rgba(255,255,255,0.98), rgba(235,244,255,0.98));
-    padding: 18px 20px;
-    border-radius: 16px;
-    text-align: center;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.45);
-    min-width: 110px;
-    backdrop-filter: blur(6px);
-    border: 1px solid rgba(255,255,255,0.9);
-    transform: translateY(0) scale(1);
-    transition: transform 0.18s ease, box-shadow 0.18s ease;
-    cursor: pointer;
+  background: linear-gradient(
+    160deg,
+    rgba(255, 255, 255, 0.98),
+    rgba(235, 244, 255, 0.98)
+  );
+  padding: 18px 20px;
+  border-radius: 16px;
+  text-align: center;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  min-width: 110px;
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  transform: translateY(0) scale(1);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  cursor: pointer;
 }
 
 .forecastCard:hover {
-    transform: translateY(-4px) scale(1.03);
-    box-shadow: 0 10px 24px rgba(0,0,0,0.55);
+  transform: translateY(-4px) scale(1.03);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.55);
 }
 
 .forecastCardActive {
-    box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.9), 0 12px 28px rgba(0,0,0,0.7);
-    transform: translateY(-5px) scale(1.06);
+  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.9),
+    0 12px 28px rgba(0, 0, 0, 0.7);
+  transform: translateY(-5px) scale(1.06);
 }
 
 .forecastDay {
-    font-weight: 800;
-    margin-bottom: 4px;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+  font-weight: 800;
+  margin-bottom: 4px;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
 }
 
 .forecastTemp {
-    font-size: 1.6rem;
-    font-weight: 700;
-    margin-bottom: 4px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  margin-bottom: 4px;
 }
 
 .forecastIconWrapper {
-    width: 82px;
-    height: 82px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.98);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 10px auto 6px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.98);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 10px auto 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
 }
 
 .forecastIcon {
-    width: 56px;
-    height: 56px;
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+  width: 56px;
+  height: 56px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
 }
 
 .forecastDesc {
-    font-size: 0.95rem;
-    text-transform: capitalize;
-    opacity: 0.8;
+  font-size: 0.95rem;
+  text-transform: capitalize;
+  opacity: 0.8;
 }
 
 .selectedDayInfo {
-    margin-top: 4px;
-    font-size: 1.1rem;
-    color: #f5f5f5;
-    text-shadow: 0 0 6px rgba(0,0,0,0.7);
-    opacity: 0;
-    transform: translateY(4px);
-    transition: opacity 0.18s ease, transform 0.18s ease;
+  margin-top: 4px;
+  font-size: 1.1rem;
+  color: #f5f5f5;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.7);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: opacity 0.18s ease, transform 0.18s ease;
 }
 
 .selectedDayInfoVisible {
-    opacity: 1;
-    transform: translateY(0);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .loadingSpinner {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: 6px solid rgba(255,255,255,0.6);
-    border-top: 6px solid rgba(0,0,0,0.8);
-    animation: spin 1s linear infinite;
-    margin: 20px auto;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 6px solid rgba(255, 255, 255, 0.6);
+  border-top: 6px solid rgba(0, 0, 0, 0.8);
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
 }
 
 .loadingText {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-top: 10px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-top: 10px;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 @keyframes errorShake {
-    0% { transform: translateY(0) translateX(0); }
-    25% { transform: translateY(0) translateX(-3px); }
-    50% { transform: translateY(0) translateX(3px); }
-    75% { transform: translateY(0) translateX(-3px); }
-    100% { transform: translateY(0) translateX(0); }
+  0% {
+    transform: translateY(0) translateX(0);
+  }
+  25% {
+    transform: translateY(0) translateX(-3px);
+  }
+  50% {
+    transform: translateY(0) translateX(3px);
+  }
+  75% {
+    transform: translateY(0) translateX(-3px);
+  }
+  100% {
+    transform: translateY(0) translateX(0);
+  }
 }
 
 @keyframes fadeUp {
-    0% { opacity: 0; transform: translateY(8px); }
-    100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
