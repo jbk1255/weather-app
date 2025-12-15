@@ -15,7 +15,8 @@ const alertsBanner = document.getElementById("alertsBanner");
 const favoritesList = document.getElementById("favoritesList");
 const addFavTopBtn = document.getElementById("addFavTopBtn");
 
-const apiKey = "YOUR_API_KEY";
+const PROXY_BASE = "https://weatherly-api.vercel.app";
+
 const LAST_SEARCH_KEY = "weatherAppLastSearch";
 const FAVORITES_KEY = "weatherAppFavorites";
 
@@ -159,14 +160,12 @@ cityInput.addEventListener("input", () => {
 
 async function fetchSuggestions(query) {
   try {
-    const url = `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(
-      query
-    )}&limit=5&appid=${apiKey}`;
+    const url = `${PROXY_BASE}/api/geocode?q=${encodeURIComponent(query)}`;
     const res = await fetch(url);
     if (!res.ok) return clearSuggestions();
 
     const locations = await res.json();
-    renderSuggestions(locations);
+    renderSuggestions(Array.isArray(locations) ? locations : []);
   } catch {
     clearSuggestions();
   }
@@ -249,8 +248,8 @@ weatherForm.addEventListener("submit", async (event) => {
     } else {
       currentSearchDescriptor = {
         mode: "city",
-        name: cityQuery,        
-        label: cityInput.value, 
+        name: cityQuery,
+        label: cityInput.value,
       };
       saveLastSearch(currentSearchDescriptor);
     }
@@ -300,44 +299,39 @@ unitSelect.addEventListener("change", () => {
 });
 
 async function getWeather(city) {
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(
-    city
-  )}&appid=${apiKey}`;
+  const url = `${PROXY_BASE}/api/weather?q=${encodeURIComponent(city)}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Location not found.");
   return res.json();
 }
 
 async function getForecast(city) {
-  const url = `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(
-    city
-  )}&appid=${apiKey}`;
+  const url = `${PROXY_BASE}/api/forecast?q=${encodeURIComponent(city)}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Could not load forecast.");
   return res.json();
 }
 
 async function getWeatherByCoords(lat, lon) {
-  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+  const url = `${PROXY_BASE}/api/weather?lat=${encodeURIComponent(
+    lat
+  )}&lon=${encodeURIComponent(lon)}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Location not found.");
   return res.json();
 }
 
 async function getForecastByCoords(lat, lon) {
-  const url = `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${apiKey}`;
+  const url = `${PROXY_BASE}/api/forecast?lat=${encodeURIComponent(
+    lat
+  )}&lon=${encodeURIComponent(lon)}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Could not load forecast.");
   return res.json();
 }
 
-async function getAlertsByCoords(lat, lon) {
-  const url = `https://api.openweathermap.org/data/3.0/onecall?lat=${lat}&lon=${lon}&exclude=minutely,hourly,daily,current&appid=${apiKey}`;
-  const res = await fetch(url);
-  if (!res.ok) return null;
-  const data = await res.json();
-  if (!data || !Array.isArray(data.alerts) || data.alerts.length === 0) return null;
-  return data.alerts[0];
+async function getAlertsByCoords() {
+  return null;
 }
 
 function showLoading() {
@@ -361,21 +355,7 @@ function showLoading() {
 async function updateAlertsFromWeatherData(weatherData) {
   try {
     if (!weatherData || !weatherData.coord) return hideAlerts();
-    const { lat, lon } = weatherData.coord;
-    const alert = await getAlertsByCoords(lat, lon);
-    if (!alert) return hideAlerts();
-
-    const key = `${Math.round(lat * 1000) / 1000},${Math.round(lon * 1000) / 1000}:${
-      alert.event || "alert"
-    }`;
-
-    const until = alert.end
-      ? ` until ${formatTime(getCityDateFromUtc(alert.end, weatherData.timezone || 0))}`
-      : "";
-
-    const eventName = alert.event ? `${alert.event}` : "Weather Alert";
-    const text = `⚠️ ${eventName}${until}`;
-    showAlertBanner(text, key);
+    hideAlerts();
   } catch {
     hideAlerts();
   }
@@ -480,7 +460,9 @@ function setWeatherBackground(id) {
 function displayForecast(data, unit) {
   forecastContainer.innerHTML = "";
 
-  const filtered = data.list.filter((x) => x.dt_txt.includes("12:00:00")).slice(0, 5);
+  const filtered = data.list
+    .filter((x) => x.dt_txt.includes("12:00:00"))
+    .slice(0, 5);
   forecastEntries = filtered;
 
   selectedDayInfo.textContent = "";
@@ -497,7 +479,9 @@ function displayForecast(data, unit) {
     const cardDiv = document.createElement("div");
     cardDiv.classList.add("forecastCard");
 
-    const day = new Date(entry.dt_txt).toLocaleDateString("en-US", { weekday: "short" });
+    const day = new Date(entry.dt_txt).toLocaleDateString("en-US", {
+      weekday: "short",
+    });
     const description = entry.weather[0].description;
 
     cardDiv.innerHTML = `
@@ -578,8 +562,6 @@ function loadLastSearch() {
     return null;
   }
 }
-
-/* ---------- FAVOURITES ---------- */
 
 function loadFavorites() {
   try {
@@ -669,10 +651,7 @@ function renderFavorites() {
     const removeBtn = document.createElement("button");
     removeBtn.type = "button";
     removeBtn.className = "favChipRemove";
-    removeBtn.setAttribute(
-      "aria-label",
-      `Remove ${favoriteLabel(fav)} from favourites`
-    );
+    removeBtn.setAttribute("aria-label", `Remove ${favoriteLabel(fav)} from favourites`);
     removeBtn.textContent = "×";
 
     removeBtn.addEventListener("click", (e) => {
@@ -798,8 +777,6 @@ if (addFavTopBtn) {
   });
 }
 
-/* ---------- GEOLOCATION ---------- */
-
 if (geoButton) {
   geoButton.addEventListener("click", () => {
     if (!navigator.geolocation) {
@@ -854,8 +831,6 @@ if (geoButton) {
     );
   });
 }
-
-/* ---------- LOAD ---------- */
 
 window.addEventListener("load", async () => {
   cityInput.value = "";
