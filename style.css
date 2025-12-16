@@ -87,7 +87,6 @@ body {
   text-align: center;
 }
 
-/* "column newspaper" look: fixed readable width + balanced wrapping */
 .homeBlurb,
 .homeDev {
   max-width: 56ch;
